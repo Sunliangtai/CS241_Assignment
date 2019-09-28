@@ -18,16 +18,17 @@ int main()
     double answer = 0.29;
     double left_value = calc_fx(left);
     double right_value = calc_fx(right);
-    while(fabs(mid-answer)>0.00001)
+    int time = 0;
+    while(fabs(left-right)>0.00001)
     { 
-        cout << mid << '\n';
+        cout << "x" << time++ << ": " << mid << '\n';
         out << fabs(mid-answer) << '\n';
         double mid_value = calc_fx(mid);
         if(left_value*mid_value>0) left = mid;
         else right = mid;
         mid = (left+right)/2;
     }
-    cout << mid << '\n';
+    cout << "final answer:" << mid << '\n';
     out << fabs(mid-answer);
     out.close();
     system("pause");

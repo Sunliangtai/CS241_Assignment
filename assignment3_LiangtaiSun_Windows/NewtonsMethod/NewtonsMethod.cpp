@@ -18,13 +18,15 @@ int main()
     ofstream out("NewtonsMethod.txt");
     double x = 0.343036;
     double answer = 0.29;
-    while (fabs(x-answer)>0.00001)
-    {
-        cout << x << '\n';
+    double temp_x;
+    int time = 0;
+    do{
+        temp_x = x;
         out << fabs(x-answer) << '\n';
         x = x - calc_fx(x)/clac_de_fx(x);
-    }
-    cout << x << '\n';
+        cout << "x" << time++ << ": " <<  x << '\n';
+    }while (fabs(x-temp_x)>0.00001);
+    cout << "final answer:" << x << '\n';
     out << fabs(x-answer);
     out.close();
     system("pause");
