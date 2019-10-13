@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
+#include <algorithm>
 #define EPS 1e-8
 #define judge_end 0.001
 #define max_iteration 10000
@@ -10,22 +11,44 @@ int N;
 
 bool judge_unique_Solution(double** matrix)
 {
-    double save[N][N+1];
-    for(int i=0;i<N;i++)
-        for(int j=0;j<N+1;j++)
-            save[i][j] = matrix[i][j];
+    double minimum = 0x7fffffff;
+    int min_x = -1;
     for(int i=0;i<N-1;i++)
     {
+        min_x = -1;
+        minimum = 0x7fffffff;
+        for(int j=i;j<N;j++)
+        {
+            if(matrix[j][i]!=0&&fabs(matrix[j][i])<minimum)
+            {
+                min_x = j;
+                minimum = fabs(matrix[j][i]);
+            }
+        }
+        if(min_x==-1) return false;
+        else if(min_x!=i)
+        {
+            double temp;
+            for(int k=i;k<=N;k++)
+            {
+                temp = matrix[i][k];
+                matrix[i][k] = matrix[min_x][k];
+                matrix[min_x][k] = temp;
+            }
+        }
         for(int j=i+1;j<N;j++)
         {
-            double divider = save[j][i]/save[i][i];
+            double divider = matrix[j][i]/matrix[i][i];
             for(int k=i;k<N+1;k++)
-                save[j][k] -= divider*save[i][k];
+            {
+                matrix[j][k] -= divider*matrix[i][k];
+                if(fabs(matrix[j][k])<EPS) matrix[j][k] = 0;
+            }
         }
     }
     bool flag = false;
     for(int i=0;i<N;i++)
-        if(fabs(save[i][i]) <= EPS)
+        if(fabs(matrix[i][i]) <= EPS)
         {
             flag = true;
             break;
@@ -35,25 +58,13 @@ bool judge_unique_Solution(double** matrix)
 }
 void Gaussian_Elimination(double** matrix)
 {
-    int answer[N]={0};
-    for(int i=0;i<N-1;i++)
-    {
-        for(int j=i+1;j<N;j++)
-        {
-            double divider = matrix[j][i]/matrix[i][i];
-            for(int k=i;k<N+1;k++)
-                matrix[j][k] -= divider*matrix[i][k];
-        }
-    }
-     
+    float answer[N]={0};
     for(int i=N-1;i>=0;i--)
     {
         double temp = 0;
         for(int j=i+1;j<N;j++)
             temp += matrix[i][j]*answer[j];
-        double save = (matrix[i][N]-temp)/matrix[i][i];
-        if (save > 0 ) answer[i] = save + 0.5;
-        else answer[i] = save - 0.5;
+        answer[i] = (matrix[i][N]-temp)/matrix[i][i];
     }
     cout << '\n' << "Results is: " << '\n';
     for(int i=0;i<N;i++)
@@ -86,9 +97,8 @@ void Jacobi_Iteration(double** matrix)
         judge = 0;
         for(int i=0;i<N;i++)
         {
-            judge += pow((answer[i]-answer_new[i]), 2);
+            judge = max(fabs(answer[i]-answer_new[i]), judge);
         }
-        judge = sqrt(judge);
         iteration_time++;
         for(int i=0;i<N;i++)
             answer[i] = answer_new[i];
@@ -122,7 +132,12 @@ int main()
         return 0; 
     }
     cout << '\n';
-    bool flag = judge_unique_Solution(matrix);
+    double *save[N];
+    for(int i=0;i<N;i++) save[i] = new double[N+1];
+    for(int i=0;i<N;i++)
+        for(int j=0;j<N+1;j++)
+            save[i][j] = matrix[i][j];
+    bool flag = judge_unique_Solution(save);
     if(!flag)
     {
         cerr << "No unique solution exists!" << '\n';
@@ -142,9 +157,8 @@ int main()
     switch(choose)
     {
         case 0 : Jacobi_Iteration(matrix);break;
-        case 1 : Gaussian_Elimination(matrix);break;
+        case 1 :  Gaussian_Elimination(save);break;
     }
-
     system("pause");
     return 0;
 }
