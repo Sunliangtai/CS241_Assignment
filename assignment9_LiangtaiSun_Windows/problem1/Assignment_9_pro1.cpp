@@ -6,8 +6,9 @@
 #include <vector>
 
 #define max_iteration 5000
-#define chromosome_num 50
-#define mutaion_rate 0.1
+#define chromosome_num 200
+#define mutaion_rate 0.2
+#define crossover_rate 0.5
 #define mod 10000
 using namespace std;
 
@@ -66,10 +67,7 @@ inline void choose()
 {
     vector<chrom> tmp;
     int cnt = 0;
-    int cnt_all=0;
-    for(int i=0;i<all_chrom.size();i++)
-        if(all_chrom[i].fit_rate!=0) cnt_all++;
-    while(cnt++<cnt_all)
+    while(cnt++<chromosome_num)
     {
         double rate = (rand()%mod)/double(mod+1);
         double rate_sum = 0;
@@ -104,31 +102,27 @@ inline string print_max()
 
 inline void crossover()
 {
-    while (all_chrom.size()<chromosome_num)
+    int cnt = 0;
+    while(cnt++ < all_chrom.size())
     {
-        int num1,num2;
-        num1 = rand()%all_chrom.size();
-        do{
-            num2 = rand()%all_chrom.size();
-        }while(num1==num2);
-        string save;
-        for(int i=0;i<length;i++)
+        double rate = rand()*mod/double(mod+1);
+        if(rate<crossover_rate)
         {
-            int pos = rand()%2;
-            if(all_chrom[num1].chromosome[i]==target[i])
+            int num1,num2;
+            num1 = rand()%all_chrom.size();
+            do{
+                num2 = rand()%all_chrom.size();
+            }while(num1==num2);
+            int start,end;
+            do{
+                start = rand()%length;
+                end = rand()%length;
+            }while(end>start);
+            for(int i=start;i<=end;i++)
             {
-                save += all_chrom[num1].chromosome[i];
-                continue;
+                swap(all_chrom[num1].chromosome[i], all_chrom[num2].chromosome[i]);
             }
-            if(all_chrom[num2].chromosome[i]==target[i])
-            {
-                save += all_chrom[num2].chromosome[i];
-                continue;
-            }
-            if(rand==0) save += all_chrom[num1].chromosome[i];
-            else save+= all_chrom[num2].chromosome[i];
         }
-        all_chrom.push_back(chrom(save));
     }
 }
 
@@ -139,15 +133,10 @@ inline void mutation()
         double rate = rand()%mod/double(mod+1);
         if(rate<mutaion_rate)
         {
-            bool flag = false;
-            while(!flag)
-            {
-                int mut_pos = rand()%length;
-                int pos = rand()%genes;
-                if(all_chrom[i].chromosome[mut_pos]==target[mut_pos]) continue;
-                all_chrom[i].chromosome[mut_pos] = GENES[pos];
-                flag = true;
-            }
+            int mut_pos = rand()%length;
+            int pos = rand()%genes;
+            if(all_chrom[i].chromosome[mut_pos]==target[mut_pos]) continue;
+            all_chrom[i].chromosome[mut_pos] = GENES[pos];
         }
     }
 }

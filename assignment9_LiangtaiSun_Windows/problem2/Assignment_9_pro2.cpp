@@ -8,7 +8,8 @@
 
 #define group_cnt 1000
 #define max_iteration 5000
-#define mutation_rate 0.1
+#define mutation_rate 0.2
+#define crossover_rate 0.5
 #define mod 10000
 using namespace std;
 
@@ -111,7 +112,7 @@ inline void fitness_calc()
     double fit_all = 0;
     for(int i=0;i<group.size();i++)
     {
-        group[i].fitness = 1/pow(group[i].fx+15,2);
+        group[i].fitness = 1/pow(group[i].fx+15,3);
         fit_all += group[i].fitness;
     }
     for(int i=0;i<group.size();i++)
@@ -123,7 +124,7 @@ inline void fitness_calc()
 inline void choose()
 {
     vector<number> save;
-    while(save.size()<group_cnt/2)
+    while(save.size()<group.size())
     {
         double rand_rate = rand()%mod/double(mod+1);
         double rate_cnt = 0;
@@ -142,30 +143,40 @@ inline void choose()
 
 inline void crossover()
 {
-    while(group.size()<group_cnt)
+    int cnt=0;
+    while(cnt++<group.size())
     {
-        while(true)
+        double rate = rand()*mod/double(mod+1);
+        if(rate < crossover_rate)
         {
-            int num1,num2;
-            num1 = rand()%group.size();
-            do{
-                num2 = rand()%group.size();
-            }while(num1==num2);
-            bool flag = false;
-            number save;
-            for(int i=0;i<16;i++)
+            while(true)
             {
-                int chos = rand()%2;
-                if(chos==0)
-                    save.num += group[num1].num[i];
-                else
-                    save.num += group[num2].num[i];
+                int num1,num2;
+                num1 = rand()%group.size();
+                do{
+                    num2 = rand()%group.size();
+                }while(num1==num2);
+                bool flag = false;
+                number save1,save2;
+                save1 = group[num1];
+                save2 = group[num2];
+                int start,end;
+                do{
+                    start = rand()%16;
+                    end = rand()%16;
+                }while (end>start);
+                save1.num = group[num1].num.substr(0,start)+group[num2].num.substr(start,end-start+1)+group[num1].num.substr(end+1);
+                save2.num = group[num2].num.substr(0,start)+group[num1].num.substr(start,end-start+1)+group[num2].num.substr(end+1);
+                save1.value = decode(save1);
+                save2.value = decode(save2);
+                if(save1.value<-1||save1.value>15||save2.value<-1||save2.value>15)
+                    continue;
+                save1.fx = f(save1.value);
+                save2.fx = f(save2.value);
+                group[num1] = save1;
+                group[num2] = save2;
+                break;
             }
-            save.value = decode(save);
-            if(save.value<-1||save.value>15) continue;
-            save.fx = f(save.value);
-            group.push_back(save);
-            break;
         }
     }
 }
